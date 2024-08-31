@@ -19,13 +19,14 @@ in {
       package = lib.mkPackageOptionMD pkgs "gns3-server" { };
 
       auth = {
-        enable = lib.mkEnableOption "password based HTTP authentication to access the GNS3 Server";
+        enable = lib.mkEnableOption
+          "password based HTTP authentication to access the GNS3 Server";
 
         user = lib.mkOption {
           type = lib.types.nullOr lib.types.str;
           default = null;
           example = "gns3";
-          description = ''Username used to access the GNS3 Server.'';
+          description = "Username used to access the GNS3 Server.";
         };
 
         passwordFile = lib.mkOption {
@@ -45,8 +46,11 @@ in {
 
       settings = lib.mkOption {
         type = lib.types.submodule { freeformType = settingsFormat.type; };
-        default = {};
-        example = { host = "127.0.0.1"; port = 3080; };
+        default = { };
+        example = {
+          host = "127.0.0.1";
+          port = 3080;
+        };
         description = ''
           The global options in `config` file in ini format.
 
@@ -59,7 +63,7 @@ in {
         file = lib.mkOption {
           type = lib.types.nullOr lib.types.path;
           default = "/var/log/gns3/server.log";
-          description = ''Path of the file GNS3 Server should log to.'';
+          description = "Path of the file GNS3 Server should log to.";
         };
 
         debug = lib.mkEnableOption "debug logging";
@@ -87,17 +91,17 @@ in {
       };
 
       dynamips = {
-        enable = lib.mkEnableOption ''Whether to enable Dynamips support.'';
+        enable = lib.mkEnableOption "Whether to enable Dynamips support.";
         package = lib.mkPackageOptionMD pkgs "dynamips" { };
       };
 
       ubridge = {
-        enable = lib.mkEnableOption ''Whether to enable uBridge support.'';
+        enable = lib.mkEnableOption "Whether to enable uBridge support.";
         package = lib.mkPackageOptionMD pkgs "ubridge" { };
       };
 
       vpcs = {
-        enable = lib.mkEnableOption ''Whether to enable VPCS support.'';
+        enable = lib.mkEnableOption "Whether to enable VPCS support.";
         package = lib.mkPackageOptionMD pkgs "vpcs" { };
       };
     };
@@ -125,7 +129,8 @@ in {
       }
       {
         assertion = cfg.auth.enable -> cfg.auth.passwordFile != null;
-        message = "Please provide a password file to use for HTTP authentication.";
+        message =
+          "Please provide a password file to use for HTTP authentication.";
       }
     ];
 
@@ -163,7 +168,8 @@ in {
         VPCS.vpcs_path = lib.mkDefault (lib.getExe cfg.vpcs.package);
       })
       (lib.mkIf (cfg.dynamips.enable) {
-        Dynamips.dynamips_path = lib.mkDefault (lib.getExe cfg.dynamips.package);
+        Dynamips.dynamips_path =
+          lib.mkDefault (lib.getExe cfg.dynamips.package);
       })
     ];
 
@@ -176,9 +182,9 @@ in {
         # These are implicitly not set if `null`
         certfile = cfg.ssl.certFile;
         certkey = cfg.ssl.keyFile;
+        local = true;
       };
-    in
-    {
+    in {
       description = "GNS3 Server";
 
       after = [ "network.target" "network-online.target" ];
@@ -212,7 +218,8 @@ in {
         ExecStart = "${lib.getExe cfg.package} ${commandArgs}";
         Group = "gns3";
         LimitNOFILE = 16384;
-        LoadCredential = lib.mkIf cfg.auth.enable [ "AUTH_PASSWORD:${cfg.auth.passwordFile}" ];
+        LoadCredential =
+          lib.mkIf cfg.auth.enable [ "AUTH_PASSWORD:${cfg.auth.passwordFile}" ];
         LogsDirectory = "gns3";
         LogsDirectoryMode = "0750";
         PIDFile = "/run/gns3/server.pid";
@@ -246,13 +253,8 @@ in {
         ProtectKernelTunables = true;
         ProtectProc = "invisible";
         ProtectSystem = "strict";
-        RestrictAddressFamilies = [
-          "AF_INET"
-          "AF_INET6"
-          "AF_NETLINK"
-          "AF_UNIX"
-          "AF_PACKET"
-        ];
+        RestrictAddressFamilies =
+          [ "AF_INET" "AF_INET6" "AF_NETLINK" "AF_UNIX" "AF_PACKET" ];
         RestrictNamespaces = true;
         RestrictRealtime = true;
         RestrictSUIDSGID = true;
