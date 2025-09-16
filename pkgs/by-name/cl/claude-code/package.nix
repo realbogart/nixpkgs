@@ -26,9 +26,11 @@ buildNpmPackage (finalAttrs: {
 
   # `claude-code` tries to auto-update by default, this disables that functionality.
   # https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/overview#environment-variables
+  # The DEV=true env var causes claude to crash with `TypeError: window.WebSocket is not a constructor`
   postInstall = ''
     wrapProgram $out/bin/claude \
-      --set DISABLE_AUTOUPDATER 1
+      --set DISABLE_AUTOUPDATER 1 \
+      --unset DEV
   '';
 
   doInstallCheck = true;
@@ -42,8 +44,7 @@ buildNpmPackage (finalAttrs: {
   passthru.updateScript = ./update.sh;
 
   meta = {
-    description =
-      "Agentic coding tool that lives in your terminal, understands your codebase, and helps you code faster";
+    description = "Agentic coding tool that lives in your terminal, understands your codebase, and helps you code faster";
     homepage = "https://github.com/anthropics/claude-code";
     downloadPage = "https://www.npmjs.com/package/@anthropic-ai/claude-code";
     license = lib.licenses.unfree;
