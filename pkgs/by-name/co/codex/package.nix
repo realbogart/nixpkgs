@@ -30,7 +30,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
   sourceRoot = "${finalAttrs.src.name}/codex-rs";
 
   cargoLock = {
-    lockFile = "${finalAttrs.src}/codex-rs/Cargo.lock";
+    lockFile = ./Cargo.lock;
     outputHashes = {
       "crossterm-0.28.1" = "sha256-6qCtfSMuXACKFb9ATID39XyFDIEMFDmbx6SSmNe+728=";
       "nucleo-0.5.0" = "sha256-Hm4SxtTSBrcWpXrtSqeO0TACbUxq3gizg1zD/6Yw/sI=";
