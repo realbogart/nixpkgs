@@ -173,7 +173,11 @@ def get_manifest_metadata(manifest_path: Path) -> dict[str, Any]:
 
 
 def try_get_crate_manifest_path_from_mainfest_path(manifest_path: Path, crate_name: str) -> Path | None:
-    metadata = get_manifest_metadata(manifest_path)
+    try:
+        metadata = get_manifest_metadata(manifest_path)
+    except subprocess.CalledProcessError as exc:
+        eprint(f"Skipping manifest {manifest_path}: cargo metadata failed: {exc}")
+        return None
 
     for pkg in metadata["packages"]:
         if pkg["name"] == crate_name:

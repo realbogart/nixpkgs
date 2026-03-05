@@ -1,49 +1,27 @@
-{
-  lib,
-  stdenv,
-  rustPlatform,
-  fetchFromGitHub,
-  installShellFiles,
-  clang,
-  cmake,
-  gitMinimal,
-  libclang,
-  makeBinaryWrapper,
-  nix-update-script,
-  pkg-config,
-  openssl,
-  ripgrep,
-  versionCheckHook,
-  installShellCompletions ? stdenv.buildPlatform.canExecute stdenv.hostPlatform,
+{ lib, stdenv, rustPlatform, fetchFromGitHub, installShellFiles, clang, cmake
+, gitMinimal, libcap, libclang, makeBinaryWrapper, nix-update-script, pkg-config
+, openssl, ripgrep, versionCheckHook
+, installShellCompletions ? stdenv.buildPlatform.canExecute stdenv.hostPlatform,
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "codex";
-  version = "0.92.0";
+  version = "0.111.0";
 
   src = fetchFromGitHub {
     owner = "openai";
     repo = "codex";
     tag = "rust-v${finalAttrs.version}";
-    hash = "sha256-m/g+5wdehyaHDw6i5vik4HXiisY/iWFtPX0gKjCFPNY=";
+    hash = "sha256-hdR70BhiMg9G/ibLCeHnRSY3PcGZDv0vnqBCbzSRD6I=";
   };
 
   sourceRoot = "${finalAttrs.src.name}/codex-rs";
 
-  cargoHash = "sha256-fuT8vPb9/7fZam129nR6y+r+3j46WBhlf73Htkcjpzc=";
+  cargoHash = "sha256-h+TIwNz+A6aYcMACWl//LiavABITZxwYa4CvawR/0RQ=";
 
-  nativeBuildInputs = [
-    clang
-    cmake
-    gitMinimal
-    installShellFiles
-    makeBinaryWrapper
-    pkg-config
-  ];
+  nativeBuildInputs =
+    [ clang cmake gitMinimal installShellFiles makeBinaryWrapper pkg-config ];
 
-  buildInputs = [
-    libclang
-    openssl
-  ];
+  buildInputs = [ libcap libclang openssl ];
 
   # NOTE: set LIBCLANG_PATH so bindgen can locate libclang, and adjust
   # warning-as-error flags to avoid known false positives (GCC's
@@ -51,14 +29,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
   # character-conversion warning-as-error disabled.
   env = {
     LIBCLANG_PATH = "${lib.getLib libclang}/lib";
-    NIX_CFLAGS_COMPILE = toString (
-      lib.optionals stdenv.cc.isGNU [
-        "-Wno-error=stringop-overflow"
-      ]
-      ++ lib.optionals stdenv.cc.isClang [
-        "-Wno-error=character-conversion"
-      ]
-    );
+    NIX_CFLAGS_COMPILE = toString
+      (lib.optionals stdenv.cc.isGNU [ "-Wno-error=stringop-overflow" ]
+        ++ lib.optionals stdenv.cc.isClang
+        [ "-Wno-error=character-conversion" ]);
   };
 
   # NOTE: part of the test suite requires access to networking, local shells,
@@ -85,23 +59,18 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   passthru = {
     updateScript = nix-update-script {
-      extraArgs = [
-        "--version-regex"
-        "^rust-v(\\d+\\.\\d+\\.\\d+)$"
-      ];
+      extraArgs = [ "--version-regex" "^rust-v(\\d+\\.\\d+\\.\\d+)$" ];
     };
   };
 
   meta = {
     description = "Lightweight coding agent that runs in your terminal";
     homepage = "https://github.com/openai/codex";
-    changelog = "https://raw.githubusercontent.com/openai/codex/refs/tags/rust-v${finalAttrs.version}/CHANGELOG.md";
+    changelog =
+      "https://raw.githubusercontent.com/openai/codex/refs/tags/rust-v${finalAttrs.version}/CHANGELOG.md";
     license = lib.licenses.asl20;
     mainProgram = "codex";
-    maintainers = with lib.maintainers; [
-      malo
-      delafthi
-    ];
+    maintainers = with lib.maintainers; [ malo delafthi ];
     platforms = lib.platforms.unix;
   };
 })
